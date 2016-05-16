@@ -2,7 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-
+var session = require('express-session');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -21,19 +21,32 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+app.use(session({
+  secret: 'secret'
+}));
 
 
-app.get('/', 
+var authentication = function(req, res, next) {
+  //If the user exists
+  if (req.session.user) {
+    return next();
+  } else {
+    //redirect the user to the login page
+    res.redirect('/login');
+  }
+};
+ 
+app.get('/', authentication,
 function(req, res) {
   res.render('index');
 });
 
-app.get('/create', 
+app.get('/create', authentication,
 function(req, res) {
   res.render('index');
 });
 
-app.get('/links', 
+app.get('/links', authentication,
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.status(200).send(links.models);
@@ -76,7 +89,35 @@ function(req, res) {
 // Write your authentication routes here
 /************************************************************/
 
+app.get('/login',
+function(req, res) {
+  res.render('login');
+});
 
+app.post('/login', function(req, res) {
+  var username = req.body.username;
+  var password = req.body.password;
+  db.knex('users')
+    .where('username', '=', username)
+    // .fetch()
+    .then(function(user) {
+      //Compare password on the database to supplied password
+      if (user[0].password === password) {
+        req.session.user = user;
+        res.redirect('/links');
+      } else {
+        res.redirect('/login');
+      }
+    });
+});
+
+app.get('/signup', function(req, res) {
+  res.render('signup');
+});
+
+// app.post('/signup', function(req, res) {
+//   db.
+// })
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
