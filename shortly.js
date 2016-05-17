@@ -57,6 +57,10 @@ app.post('/links',
 function(req, res) {
   var uri = req.body.url;
 
+  if (uri.indexOf('http://') === - 1) {
+    uri = 'http://' + uri;
+  }
+
   if (!util.isValidUrl(uri)) {
     console.log('Not a valid url: ', uri);
     return res.sendStatus(404);
@@ -68,6 +72,7 @@ function(req, res) {
     } else {
       util.getUrlTitle(uri, function(err, title) {
         if (err) {
+          console.log('this is the error here <------------', uri);
           console.log('Error reading URL heading: ', err);
           return res.sendStatus(404);
         }
@@ -100,10 +105,12 @@ app.post('/login', function(req, res) {
   db.knex('users')
     .where('username', '=', username)
     .then(function(user) {
+      if (!user[0]) {
+        res.redirect('/login');
+      } else if (user[0].password === password) {
       //Compare password on the database to supplied password
-      if (user[0].password === password) {
         req.session.user = user;
-        res.redirect('/links');
+        res.redirect('/');
       } else {
         res.redirect('/login');
       }
@@ -115,14 +122,20 @@ app.get('/signup', function(req, res) {
 });
 
 app.post('/signup', function(req, res, next) {
-  new User({
+  var user = new User({
     'username': req.body.username,
     'password': req.body.password
   }).save()
   .then(function() {
-    return next();
+    req.session.user = user;
+    res.redirect('/');
   });
 });
+
+// app.post('/logout', function(req, res, next) {
+//   req.session.user = '';
+//   res.redirect('/login');
+// });
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail

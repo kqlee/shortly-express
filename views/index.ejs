@@ -1,5 +1,11 @@
 <% include partials/backbone_templates %>
 
+<form action="/logout" method="post">
+  <div>
+    <button class="logout" value="logout">Log Out</button>
+  </div>
+</form>
+
 <script>
   $(function(){
     new Shortly();

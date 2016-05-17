@@ -135,3 +135,20 @@ form input[type=text], form input[type=password] {
 .creator .message {
   clear: both;
 }
+
+.logout {
+  width: 100px;
+  height: 40px;
+  float: right;
+  font-size: 14px;
+  font-family: arial, sans-serif;
+  border: none;
+  background-color: #5cb85c;
+  /*border-radius: 10px;*/
+  color: white;
+}
+
+.logout:hover {
+  background-color: #449d44;
+  cursor: pointer;
+}
