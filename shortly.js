@@ -10,6 +10,7 @@ var User = require('./app/models/user');
 var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
+var bcrypt = require('bcrypt-nodejs');
 
 var app = express();
 
@@ -72,7 +73,6 @@ function(req, res) {
     } else {
       util.getUrlTitle(uri, function(err, title) {
         if (err) {
-          console.log('this is the error here <------------', uri);
           console.log('Error reading URL heading: ', err);
           return res.sendStatus(404);
         }
@@ -107,13 +107,24 @@ app.post('/login', function(req, res) {
     .then(function(user) {
       if (!user[0]) {
         res.redirect('/login');
-      } else if (user[0].password === password) {
-      //Compare password on the database to supplied password
-        req.session.user = user;
-        res.redirect('/');
       } else {
-        res.redirect('/login');
+        var userPass = user[0].password;
+        bcrypt.compare(password, userPass, function(err, result) {
+          if (result) {
+            req.session.user = user;
+            res.redirect('/');
+          } else {
+            res.redirect('/login');
+          }
+        });
       }
+      //   if (user[0].password === password) {
+      // //Compare password on the database to supplied password
+      //   req.session.user = user;
+      //   res.redirect('/');
+      // } else {
+      //   res.redirect('/login');
+      // }
     });
 });
 
@@ -122,18 +133,35 @@ app.get('/signup', function(req, res) {
 });
 
 app.post('/signup', function(req, res, next) {
-  var user = new User({
-    'username': req.body.username,
-    'password': req.body.password
-  }).save()
-  .then(function() {
-    req.session.user = user;
-    res.redirect('/');
-  });
+  db.knex('users')
+    .where('username', '=', req.body.username)
+    .then(function(user) {
+      if (user[0]) {
+
+        res.redirect('/signup');
+      } else {
+        var user = new User({
+          'username': req.body.username,
+          'password': req.body.password
+        });
+        var pwd = user.get('password');
+        bcrypt.hash(pwd, null, null, function(err, hash) {
+          user.set('password', hash);
+        });
+        user
+        .save()
+        .then(function() {
+          req.session.user = user;
+          res.redirect('/');
+        });
+      }
+    });
 });
+
 
 app.post('/logout', function(req, res, next) {
   req.session.user = '';
+  req.session.destroy();
   res.redirect('/login');
 });
 

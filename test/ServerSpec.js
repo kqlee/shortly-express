@@ -254,7 +254,6 @@ describe('', function() {
         db.knex('users')
           .where('username', '=', 'Svnh')
           .then(function(res) {
-            console.log(res);
             if (res[0] && res[0]['username']) {
               var user = res[0]['username'];
             }
@@ -333,5 +332,50 @@ describe('', function() {
     });
 
   }); // 'Account Login'
+
+  describe('Account Logout:', function() {
+    
+    var requestWithSession = request.defaults({jar: true});
+
+    new User({
+      'username': 'Phillip',
+      'password': 'Phillip'
+    }).save();
+
+    beforeEach(function(done) {
+      var options = {
+        'method': 'POST',
+        'uri': 'http://127.0.0.1:4568/login',
+        'json': {
+          'username': 'Phillip',
+          'password': 'Phillip'
+        }
+      };
+      requestWithSession(options, function(error, res, body) {
+        done();
+      });
+    });
+    
+
+    it('should reroute to login page', function(done) {
+
+      var options = {
+        'method': 'POST',
+        'uri': 'http://127.0.0.1:4568/logout',
+        'json': {
+          'username': 'Phillip',
+          'password': 'Phillip'
+        }
+      };
+
+      requestWithSession(options, function(error, res, body) {
+        expect(res.headers.location).to.equal('/login');
+        done();
+      });
+    });
+
+    // it('should destroy current session', )
+
+  }); // 'Account Logout'
 
 });
