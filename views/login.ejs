@@ -2,11 +2,11 @@
 <form action="/login" method="post">
     <div>
       <label for="username">Username:</label>
-      <input id="username" type="text" name="username">
+      <input id="username" type="text" name="username" required="required" maxlength="20" minlength="6">
     </div>
     <div>
       <label for="password">Password:</label>
-      <input id="password" type="password" name="password">
+      <input id="password" type="password" name="password" required="required" maxlength="20" minlength="6">
     </div>
     <div>
       <input type="submit" value="Login">

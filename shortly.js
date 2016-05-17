@@ -132,10 +132,10 @@ app.post('/signup', function(req, res, next) {
   });
 });
 
-// app.post('/logout', function(req, res, next) {
-//   req.session.user = '';
-//   res.redirect('/login');
-// });
+app.post('/logout', function(req, res, next) {
+  req.session.user = '';
+  res.redirect('/login');
+});
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
