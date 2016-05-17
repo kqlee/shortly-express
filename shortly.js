@@ -99,7 +99,6 @@ app.post('/login', function(req, res) {
   var password = req.body.password;
   db.knex('users')
     .where('username', '=', username)
-    // .fetch()
     .then(function(user) {
       //Compare password on the database to supplied password
       if (user[0].password === password) {
@@ -115,9 +114,15 @@ app.get('/signup', function(req, res) {
   res.render('signup');
 });
 
-// app.post('/signup', function(req, res) {
-//   db.
-// })
+app.post('/signup', function(req, res, next) {
+  new User({
+    'username': req.body.username,
+    'password': req.body.password
+  }).save()
+  .then(function() {
+    return next();
+  });
+});
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
